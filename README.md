@@ -33,13 +33,21 @@ This is a **Machine Learning-powered web application** that predicts the **resal
 
 ## 🛠️ Tech Stack
 
-| Layer         | Technology             |
+| Layer           | Technology           |
 |---------------|------------------------|
-| Backend       | Flask                  |
-| ML Model      | Scikit-learn, Pickle   |
-| Frontend      | HTML, CSS (AI-assisted)|
-| Database      | SQLite                 |
-| Deployment    | Render                 |
+| Backend         | Flask                  |
+| ML Model        | Scikit-learn, Pickle   |
+| Frontend        | HTML, CSS (AI-assisted)|
+| Database        | SQLite                 |
+| Deployment      | Render                 |
+
+---
+
+## 📜 License
+
+This work is licensed under a [Creative Commons Attribution-NonCommercial 4.0 International License](https://creativecommons.org/licenses/by-nc/4.0/).
+
+You can find the full license text in the [LICENSE](LICENSE) file.
 
 ---
 
@@ -55,9 +63,14 @@ This is a **Machine Learning-powered web application** that predicts the **resal
 ![History](screenshots/history.png)
 
 ---
-## 📜 License
 
-This project is licensed under the [**MIT License**](LICENSE).
+## 🧪 How to Run Locally
+
+1.  **Clone the repo**
+    ```bash
+    git clone [https://github.com/your-username/bike-price-predictor.git](https://github.com/your-username/bike-price-predictor.git)
+    cd bike-price-predictor
+    ```
 
 ## 🧪 How to Run Locally
 
