@@ -72,9 +72,4 @@ You can find the full license text in the [LICENSE](LICENSE) file.
     cd bike-price-predictor
     ```
 
-## 🧪 How to Run Locally
 
-1. **Clone the repo**
-```bash
-git clone https://github.com/your-username/bike-price-predictor.git
-cd bike-price-predictor
