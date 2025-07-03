@@ -55,6 +55,9 @@ This is a **Machine Learning-powered web application** that predicts the **resal
 ![History](screenshots/history.png)
 
 ---
+## 📜 License
+
+This project is licensed under the [**MIT License**](LICENSE).
 
 ## 🧪 How to Run Locally
 
