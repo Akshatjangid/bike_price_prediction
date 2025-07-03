@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural History Matrix - CyberBike Nexus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/cyberpunk.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js"></script>
+</head>
+<body class="history-page">
+    <!-- 3D Background Canvas -->
+    <canvas id="cyber-canvas"></canvas>
+    
+    <!-- Particle System Container -->
+    <div id="particles-container"></div>
+    
+    <!-- Navigation -->
+    <nav class="cyber-nav">
+        <div class="nav-brand">
+            <i data-feather="cpu"></i>
+            <span>CyberBike</span>
+        </div>
+        <div class="nav-links">
+            <a href="/" class="nav-link">
+                <i data-feather="home"></i>
+                <span>Neural Input</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-container">
+        <div class="history-header">
+            <h1 class="page-title">
+                <i data-feather="database"></i>
+                Neural History Matrix
+            </h1>
+            <p class="page-subtitle">Temporal Analysis of Prediction Sequences</p>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <button id="refresh-data" class="cyber-button secondary">
+                <i data-feather="refresh-cw"></i>
+                Refresh Data
+            </button>
+            <a href="/download_csv" class="cyber-button primary">
+                <i data-feather="download"></i>
+                Save Log (CSV)
+            </a>
+            <button id="delete-all-data" class="cyber-button danger">
+                <i data-feather="trash-2"></i>
+                Delete All Records
+            </button>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-grid">
+            <div class="cyber-panel chart-panel">
+                <div class="panel-header">
+                    <h3>Price Distribution Analysis</h3>
+                    <div class="chart-controls">
+                        <button class="chart-btn active" data-chart="price">Price</button>
+                        <button class="chart-btn" data-chart="brand">Brand</button>
+                        <button class="chart-btn" data-chart="owner">Owner</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="distributionChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="cyber-panel chart-panel">
+                <div class="panel-header">
+                    <h3>Temporal Prediction Stream</h3>
+                    <div class="signal-indicator">
+                        <span class="signal-dot"></span>
+                        <span>Live Data</span>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="timelineChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Prediction List -->
+        <div class="cyber-panel list-panel">
+            <div class="panel-header">
+                <h3>
+                    <i data-feather="list"></i>
+                    Detailed Prediction Records
+                </h3>
+                <div class="list-controls">
+                    <div class="search-wrapper">
+                        <input type="text" id="search-input" placeholder="Search by brand, owner, or price...">
+                        <i data-feather="search" class="search-icon"></i>
+                    </div>
+                    <div class="sort-selector">
+                        <select id="sort-selector">
+                            <option value="id-desc">Latest First</option>
+                            <option value="id-asc">Oldest First</option>
+                            <option value="price-desc">Highest Price</option>
+                            <option value="price-asc">Lowest Price</option>
+                            <option value="brand-asc">Brand A-Z</option>
+                            <option value="age-asc">Newest Bikes</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="prediction-list" id="prediction-list">
+                {% if rows %}
+                    {% for row in rows %}
+                    <div class="prediction-card" data-search="{{ row.brand|lower }} {{ row.owner|lower }} {{ row.predicted_price }}">
+                        <div class="card-header">
+                            <div class="prediction-id">#{{ '%04d'|format(row.id) }}</div>
+                            <div class="prediction-price">₹{{ '{:,.0f}'.format(row.predicted_price) }}</div>
+                        </div>
+                        <div class="card-content">
+                            <div class="bike-details">
+                                <div class="detail-item">
+                                    <i data-feather="award" class="detail-icon"></i>
+                                    <span class="detail-label">Brand:</span>
+                                    <span class="detail-value brand-value">{{ row.brand }}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <i data-feather="user" class="detail-icon"></i>
+                                    <span class="detail-label">Owner:</span>
+                                    <span class="detail-value">{{ row.owner }}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <i data-feather="navigation" class="detail-icon"></i>
+                                    <span class="detail-label">Distance:</span>
+                                    <span class="detail-value">{{ "{:,.0f}".format(row.kms_driven) }} KM</span>
+                                </div>
+                                <div class="detail-item">
+                                    <i data-feather="clock" class="detail-icon"></i>
+                                    <span class="detail-label">Age:</span>
+                                    <span class="detail-value">{{ row.age }} Years</span>
+                                </div>
+                                <div class="detail-item">
+                                    <i data-feather="zap" class="detail-icon"></i>
+                                    <span class="detail-label">Power:</span>
+                                    <span class="detail-value">{{ row.power }} CC</span>
+                                </div>
+                                {% if row.timestamp %}
+                                <div class="detail-item">
+                                    <i data-feather="calendar" class="detail-icon"></i>
+                                    <span class="detail-label">Date:</span>
+                                    <span class="detail-value timestamp-value">{{ row.timestamp }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="market-indicator">
+                                <span class="indicator-dot"></span>
+                                <span>Market Valuation Complete</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i data-feather="database"></i>
+                    </div>
+                    <h3>No Prediction Data Found</h3>
+                    <p>Neural matrix is empty. Initialize your first prediction to populate the archive.</p>
+                    <a href="/" class="cyber-button primary">
+                        <i data-feather="plus"></i>
+                        Create Prediction
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/three-effects.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/chart-visualization.js') }}"></script>
+    <script>
+        // Initialize Feather Icons
+        feather.replace();
+        
+        // Initialize visualizations
+        initializeCharts();
+        initializeListFeatures();
+
+        function initializeListFeatures() {
+            // Search functionality for detailed list
+            const searchInput = document.getElementById('search-input');
+            const predictionList = document.getElementById('prediction-list');
+            
+            if (searchInput && predictionList) {
+                searchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const cards = predictionList.querySelectorAll('.prediction-card');
+                    
+                    cards.forEach(card => {
+                        const searchData = card.dataset.search;
+                        card.style.display = searchData.includes(searchTerm) ? '' : 'none';
+                    });
+                });
+            }
+
+            // Sort functionality
+            const sortSelector = document.getElementById('sort-selector');
+            if (sortSelector) {
+                sortSelector.addEventListener('change', function() {
+                    sortPredictionList(this.value);
+                });
+            }
+
+            // Quick action buttons
+            const refreshButton = document.getElementById('refresh-data');
+            const deleteAllButton = document.getElementById('delete-all-data');
+
+            if (refreshButton) {
+                refreshButton.addEventListener('click', function() {
+                    window.location.reload();
+                });
+            }
+
+            if (deleteAllButton) {
+                deleteAllButton.addEventListener('click', function() {
+                    if (confirm('⚠️ WARNING: This will permanently delete ALL prediction records!\n\nThis action cannot be undone. Are you absolutely sure?')) {
+                        if (confirm('Final confirmation: Delete all prediction data?')) {
+                            window.location.href = '/delete_all';
+                        }
+                    }
+                });
+            }
+        }
+
+        function sortPredictionList(sortType) {
+            const predictionList = document.getElementById('prediction-list');
+            if (!predictionList) return;
+
+            const cards = Array.from(predictionList.querySelectorAll('.prediction-card'));
+            
+            cards.sort((a, b) => {
+                switch (sortType) {
+                    case 'id-desc':
+                        return parseInt(b.querySelector('.prediction-id').textContent.replace('#', '')) - 
+                               parseInt(a.querySelector('.prediction-id').textContent.replace('#', ''));
+                    case 'id-asc':
+                        return parseInt(a.querySelector('.prediction-id').textContent.replace('#', '')) - 
+                               parseInt(b.querySelector('.prediction-id').textContent.replace('#', ''));
+                    case 'price-desc':
+                        return parseFloat(b.querySelector('.prediction-price').textContent.replace(/[₹,]/g, '')) - 
+                               parseFloat(a.querySelector('.prediction-price').textContent.replace(/[₹,]/g, ''));
+                    case 'price-asc':
+                        return parseFloat(a.querySelector('.prediction-price').textContent.replace(/[₹,]/g, '')) - 
+                               parseFloat(b.querySelector('.prediction-price').textContent.replace(/[₹,]/g, ''));
+                    case 'brand-asc':
+                        return a.querySelector('.brand-value').textContent.localeCompare(b.querySelector('.brand-value').textContent);
+                    case 'age-asc':
+                        return parseFloat(a.querySelector('.detail-item:nth-child(4) .detail-value').textContent) - 
+                               parseFloat(b.querySelector('.detail-item:nth-child(4) .detail-value').textContent);
+                    default:
+                        return 0;
+                }
+            });
+
+            // Re-append sorted cards
+            cards.forEach(card => predictionList.appendChild(card));
+        }
+
+        function sortTable(column) {
+            const table = document.getElementById('predictions-table');
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            rows.sort((a, b) => {
+                const aVal = getCellValue(a, column);
+                const bVal = getCellValue(b, column);
+                
+                if (typeof aVal === 'number' && typeof bVal === 'number') {
+                    return bVal - aVal; // Descending for numbers
+                } else {
+                    return aVal.localeCompare(bVal); // Ascending for strings
+                }
+            });
+            
+            rows.forEach(row => tbody.appendChild(row));
+        }
+
+        function getCellValue(row, column) {
+            const cellIndex = {
+                'id': 0,
+                'brand': 1,
+                'owner': 2,
+                'kms_driven': 3,
+                'age': 4,
+                'power': 5,
+                'predicted_price': 6
+            }[column];
+            
+            const cell = row.cells[cellIndex];
+            const text = cell.textContent.trim();
+            
+            if (column === 'id') {
+                return parseInt(text.replace('#', ''));
+            } else if (['kms_driven', 'age', 'power', 'predicted_price'].includes(column)) {
+                return parseFloat(text.replace(/[₹,]/g, ''));
+            } else {
+                return text;
+            }
+        }
+    </script>
+</body>
+</html>

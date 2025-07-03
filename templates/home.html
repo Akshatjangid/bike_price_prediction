@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberBike Nexus - AI Price Predictor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/cyberpunk.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js"></script>
+</head>
+<body>
+    <!-- 3D Background Canvas -->
+    <canvas id="cyber-canvas"></canvas>
+    
+    <!-- Particle System Container -->
+    <div id="particles-container"></div>
+    
+    <!-- Glitch Overlay -->
+    <div class="glitch-overlay"></div>
+    
+    <!-- Navigation -->
+    <nav class="cyber-nav">
+        <div class="nav-brand">
+            <i data-feather="cpu"></i>
+            <span>CyberBike</span>
+        </div>
+        <div class="nav-links">
+            <a href="/history" class="nav-link">
+                <i data-feather="database"></i>
+                <span>History Log</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-container">
+        <div class="cyber-grid">
+            <!-- Input Panel -->
+            <div class="cyber-panel input-panel" style="height:max-content;">
+                <div class="panel-header">
+                    <h2 class="panel-title">
+                        <i data-feather="settings"></i>
+                        Neural Input Matrix
+                    </h2>
+                    <div class="status-indicator">
+                        <span class="status-dot active"></span>
+                        <span>ONLINE</span>
+                    </div>
+                </div>
+                
+                <form id="bikeForm" class="cyber-form">
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label for="brand">Brand Classification</label>
+                            <div class="select-wrapper">
+                                <select name="brand" required>
+                                    <option value="">Select Brand...</option>
+                                    {% for key in brand_map.keys() %}
+                                        <option value="{{ key }}">{{ key }}</option>
+                                    {% endfor %}
+                                </select>
+                                <i data-feather="chevron-down" class="select-icon"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="owner">Ownership Matrix</label>
+                            <div class="select-wrapper">
+                                <select name="owner" required>
+                                    <option value="">Select Owner...</option>
+                                    {% for key in owner_map.keys() %}
+                                        <option value="{{ key }}">{{ key }}</option>
+                                    {% endfor %}
+                                </select>
+                                <i data-feather="chevron-down" class="select-icon"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="kms_driven">Distance Vector (KM)</label>
+                            <div class="input-wrapper">
+                                <input type="number" step="1" name="kms_driven" required placeholder="15000">
+                                <i data-feather="navigation" class="input-icon"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="age">Temporal Index (Years)</label>
+                            <div class="input-wrapper">
+                                <input type="number" step="0.1" name="age" required placeholder="5.0">
+                                <i data-feather="clock" class="input-icon"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="input-group full-span">
+                            <label for="power">Power Core (CC)</label>
+                            <div class="input-wrapper">
+                                <input type="number" step="1" name="power" required placeholder="150">
+                                <i data-feather="zap" class="input-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="cyber-button primary">
+                        <span class="button-text">
+                            <i data-feather="cpu"></i>
+                            INITIALIZE PREDICTION SEQUENCE
+                        </span>
+                        <div class="button-glow"></div>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Output Panel -->
+            <div class="cyber-panel output-panel" style="height:525px">
+                <div class="panel-header">
+                    <h2 class="panel-title">
+                        <i data-feather="activity"></i>
+                        Neural Output Stream
+                    </h2>
+                    <div class="signal-bars">
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                    </div>
+                </div>
+                
+                <div class="output-content">
+                    <div id="output-placeholder" class="placeholder-state">
+                        <div class="hologram-container">
+                            <div class="hologram-bike">
+                                <i data-feather="zap" class="hologram-icon"></i>
+                            </div>
+                            <div class="scan-lines"></div>
+                        </div>
+                        <h3>Awaiting Neural Input...</h3>
+                        <p>System ready for data transmission</p>
+                    </div>
+                    
+                    <div id="result-container" class="result-display" style="display: none;">
+                        <div class="result-header">
+                            <h3>Market Value Assessment</h3>
+                            <div class="confidence-meter">
+                                <div class="confidence-bar">
+                                    <div class="confidence-fill"></div>
+                                </div>
+                                <span class="confidence-text">96.7% Accuracy</span>
+                            </div>
+                        </div>
+                        
+                        <div class="price-container">
+                            <div class="price-glow"></div>
+                            <h1 class="price-value" id="prediction_text">₹0</h1>
+                            <div class="price-subtitle">Estimated Market Value</div>
+                        </div>
+                        
+                        <div class="result-metrics">
+                            <div class="metric">
+                                <i data-feather="trending-up"></i>
+                                <span>Market Trend: Stable</span>
+                            </div>
+                            <div class="metric">
+                                <i data-feather="shield"></i>
+                                <span>Reliability Index: High</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="loading-content">
+            <div class="quantum-loader">
+                <div class="quantum-core"></div>
+                <div class="quantum-ring ring-1"></div>
+                <div class="quantum-ring ring-2"></div>
+                <div class="quantum-ring ring-3"></div>
+            </div>
+            <h3>Processing Neural Networks...</h3>
+            <div class="loading-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+                <span class="progress-text">Analyzing market data...</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/three-effects.js') }}"></script>
+    <script>
+        // Initialize Feather Icons
+        feather.replace();
+        
+        // Form handling
+        const bikeForm = document.getElementById('bikeForm');
+        const outputPlaceholder = document.getElementById('output-placeholder');
+        const resultContainer = document.getElementById('result-container');
+        const predictionText = document.getElementById('prediction_text');
+        const loadingOverlay = document.getElementById('loading-overlay');
+
+        bikeForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Show loading
+            loadingOverlay.style.display = 'flex';
+            setTimeout(() => loadingOverlay.classList.add('active'), 10);
+            
+            const formData = new FormData(this);
+            
+            fetch('/predict', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                setTimeout(() => {
+                    loadingOverlay.classList.remove('active');
+                    setTimeout(() => {
+                        loadingOverlay.style.display = 'none';
+                        
+                        if(data.success) {
+                            outputPlaceholder.style.display = 'none';
+                            resultContainer.style.display = 'block';
+                            resultContainer.classList.add('reveal-animation');
+                            
+                            // Animate price count up
+                            const finalPrice = parseFloat(data.prediction_text.replace('₹', '').replace(/,/g, ''));
+                            animateValue(predictionText, 0, finalPrice, 2000, '₹');
+                        } else {
+                            showError('Prediction failed: ' + (data.error || 'Unknown error'));
+                        }
+                    }, 300);
+                }, 1500);
+            })
+            .catch(error => {
+                setTimeout(() => {
+                    loadingOverlay.classList.remove('active');
+                    setTimeout(() => {
+                        loadingOverlay.style.display = 'none';
+                        showError('Network error occurred');
+                    }, 300);
+                }, 1500);
+                console.error('Error:', error);
+            });
+        });
+
+        function animateValue(element, start, end, duration, prefix = '') {
+            const startTime = performance.now();
+            
+            function updateValue(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+                const current = start + (end - start) * easeOutQuart;
+                
+                element.textContent = prefix + Math.round(current).toLocaleString();
+                
+                if (progress < 1) {
+                    requestAnimationFrame(updateValue);
+                }
+            }
+            
+            requestAnimationFrame(updateValue);
+        }
+
+        function showError(message) {
+            outputPlaceholder.style.display = 'block';
+            outputPlaceholder.innerHTML = `
+                <div class="error-state">
+                    <i data-feather="alert-triangle" class="error-icon"></i>
+                    <h3>System Error</h3>
+                    <p>${message}</p>
+                </div>
+            `;
+            feather.replace();
+        }
+
+        // Reset animation class
+        resultContainer.addEventListener('animationend', () => {
+            resultContainer.classList.remove('reveal-animation');
+        });
+
+        // Interactive form enhancements
+        document.querySelectorAll('.input-wrapper input, .select-wrapper select').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.closest('.input-group').classList.add('focused');
+            });
+            
+            input.addEventListener('blur', function() {
+                this.closest('.input-group').classList.remove('focused');
+            });
+            
+            input.addEventListener('input', function() {
+                if(this.value) {
+                    this.closest('.input-group').classList.add('filled');
+                } else {
+                    this.closest('.input-group').classList.remove('filled');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
